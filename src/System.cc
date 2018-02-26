@@ -50,23 +50,29 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
         cout << "RGB-D" << endl;
 
     //Check settings file
-    cv::FileStorage fsSettings(strSettingsFile.c_str(), cv::FileStorage::READ);
-    if(!fsSettings.isOpened())
-    {
-       cerr << "Failed to open settings file at: " << strSettingsFile << endl;
-       exit(-1);
-    }
-
+    if(strSettingsFile==""){
+    	std::cerr << "No settings file specified\n";
+    }else {
+	    cv::FileStorage fsSettings(strSettingsFile.c_str(), cv::FileStorage::READ);
+    	if(!fsSettings.isOpened())
+    	{
+    	   cerr << "Failed to open settings file at: " << strSettingsFile << endl;
+    	   exit(-1);
+    	}
+	}
 
     //Load ORB Vocabulary
     cout << endl << "Loading ORB Vocabulary. This could take a while..." << endl;
-
     mpVocabulary = new ORBVocabulary();
-    bool bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
+	bool bVocLoad = false;
+	if(strVocFile.substr (strVocFile.length()-4,4) == ".txt")
+	    bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
+	else
+		bVocLoad = mpVocabulary->loadFromBinFile(strVocFile);
+	
     if(!bVocLoad)
     {
-        cerr << "Wrong path to vocabulary. " << endl;
-        cerr << "Falied to open at: " << strVocFile << endl;
+        cerr << "Faild to load vocabulary at: " << strVocFile << endl;
         exit(-1);
     }
     cout << "Vocabulary loaded!" << endl << endl;
@@ -487,6 +493,11 @@ vector<cv::KeyPoint> System::GetTrackedKeyPointsUn()
 {
     unique_lock<mutex> lock(mMutexState);
     return mTrackedKeyPointsUn;
+}
+
+bool System::SaveMap(const string &filename) {
+  cerr << "System Saving to " << filename << endl;
+  return mpMap->Save(filename);
 }
 
 } //namespace ORB_SLAM

@@ -74,7 +74,11 @@ public:
     // Use this function if you have deactivated local mapping and you only want to localize the camera.
     void InformOnlyTracking(const bool &flag);
 
-
+	//SLAMBENCH2 addition
+	cv::Mat getPose();
+	void ConfigureCamera(cv::Mat K, cv::Mat DistCoef, int fps, float DepthMapFactor, float bf, float thDepth );
+	void ConfigureAlgorithm(int maxFeatures, int pyramidLevels, float levelScale, int firstFASTThresh, int secondFASTThresh );	
+	void PrintConfig() ;
 public:
 
     // Tracking states

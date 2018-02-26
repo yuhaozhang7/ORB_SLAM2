@@ -77,8 +77,13 @@ bool Initializer::Initialize(const Frame &CurrentFrame, const vector<int> &vMatc
     // Generate sets of 8 points for each RANSAC iteration
     mvSets = vector< vector<size_t> >(mMaxIterations,vector<size_t>(8,0));
 
-    DUtils::Random::SeedRandOnce(0);
 
+    #ifdef MINIMISE_RAND
+    fprintf(stderr, "Initialising rand with seed\n");
+    DUtils::Random::SeedRandOnce(1);
+    #else
+        DUtils::Random::SeedRandOnce(0);
+    #endif
     for(int it=0; it<mMaxIterations; it++)
     {
         vAvailableIndices = vAllIndices;

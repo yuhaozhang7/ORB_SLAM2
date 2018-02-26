@@ -42,6 +42,67 @@ using namespace std;
 
 namespace ORB_SLAM2
 {
+void  Tracking::ConfigureCamera(cv::Mat K, cv::Mat DistCoef, int fps, float DepthMapFactor, float bf, float thDepth ) {
+	mbf = bf;
+	K.copyTo(mK);
+	DistCoef.copyTo(mDistCoef);
+	mMaxFrames = fps;
+    if(mSensor==System::STEREO || mSensor==System::RGBD)
+    {
+        mThDepth = bf*(float)thDepth/K.at<float>(0,0);
+    }
+	if(mSensor==System::RGBD)
+    {
+        mDepthMapFactor = DepthMapFactor;
+    }
+}
+void  Tracking::ConfigureAlgorithm(int maxFeatures, int pyramidLevels, float levelScale, int firstFASTThresh, int secondFASTThresh ) {
+
+	if(mpORBextractorLeft)
+		delete mpORBextractorLeft;		
+	mpORBextractorLeft = new ORBextractor(maxFeatures,levelScale,pyramidLevels,firstFASTThresh,secondFASTThresh);
+
+    if(mSensor==System::STEREO){
+    	if(mpORBextractorRight)
+    		delete mpORBextractorRight;
+        mpORBextractorRight = new ORBextractor(maxFeatures,levelScale,pyramidLevels,firstFASTThresh,secondFASTThresh);
+    }
+
+    if(mSensor==System::MONOCULAR){
+    	if(mpIniORBextractor)
+    		delete mpIniORBextractor;
+        mpIniORBextractor = new ORBextractor(2*maxFeatures,levelScale,pyramidLevels,firstFASTThresh,secondFASTThresh);
+	}
+    
+
+}
+void Tracking::PrintConfig() {
+    cout << endl << "Camera Parameters: " << endl;
+    cout << "- fx: " << mK.at<float>(0,0)  << endl;
+    cout << "- fy: " << mK.at<float>(1,1) << endl;
+    cout << "- cx: " << mK.at<float>(0,2) << endl;
+    cout << "- cy: " << mK.at<float>(1,2) << endl;
+    cout << "- k1: " << mDistCoef.at<float>(0) << endl;
+    cout << "- k2: " << mDistCoef.at<float>(1) << endl;
+    if(mDistCoef.rows==5)
+        cout << "- k3: " << mDistCoef.at<float>(4) << endl;
+    cout << "- p1: " << mDistCoef.at<float>(2) << endl;
+    cout << "- p2: " << mDistCoef.at<float>(3) << endl;
+    cout << "- fps: " << mMaxFrames << endl;
+    
+    cout << endl  << "ORB Extractor Parameters: " << endl;
+ /*   cout << "- Number of Features: " << nFeatures << endl;
+    cout << "- Scale Levels: " << nLevels << endl;
+    cout << "- Scale Factor: " << fScaleFactor << endl;
+    cout << "- Initial Fast Threshold: " << fIniThFAST << endl;
+    cout << "- Minimum Fast Threshold: " << fMinThFAST << endl;*/
+    
+    if(mSensor==System::STEREO || mSensor==System::RGBD)
+    {
+           cout << endl << "Depth Threshold (Close/Far Points): " << mThDepth << endl;
+    } 
+    
+}
 
 Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, Map *pMap, KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor):
     mState(NO_IMAGES_YET), mSensor(sensor), mbOnlyTracking(false), mbVO(false), mpORBVocabulary(pVoc),
@@ -49,7 +110,8 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     mpFrameDrawer(pFrameDrawer), mpMapDrawer(pMapDrawer), mpMap(pMap), mnLastRelocFrameId(0)
 {
     // Load camera parameters from settings file
-
+	if(strSettingPath=="")
+		return;
     cv::FileStorage fSettings(strSettingPath, cv::FileStorage::READ);
     float fx = fSettings["Camera.fx"];
     float fy = fSettings["Camera.fy"];
@@ -86,20 +148,6 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     mMinFrames = 0;
     mMaxFrames = fps;
 
-    cout << endl << "Camera Parameters: " << endl;
-    cout << "- fx: " << fx << endl;
-    cout << "- fy: " << fy << endl;
-    cout << "- cx: " << cx << endl;
-    cout << "- cy: " << cy << endl;
-    cout << "- k1: " << DistCoef.at<float>(0) << endl;
-    cout << "- k2: " << DistCoef.at<float>(1) << endl;
-    if(DistCoef.rows==5)
-        cout << "- k3: " << DistCoef.at<float>(4) << endl;
-    cout << "- p1: " << DistCoef.at<float>(2) << endl;
-    cout << "- p2: " << DistCoef.at<float>(3) << endl;
-    cout << "- fps: " << fps << endl;
-
-
     int nRGB = fSettings["Camera.RGB"];
     mbRGB = nRGB;
 
@@ -124,17 +172,11 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     if(sensor==System::MONOCULAR)
         mpIniORBextractor = new ORBextractor(2*nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
 
-    cout << endl  << "ORB Extractor Parameters: " << endl;
-    cout << "- Number of Features: " << nFeatures << endl;
-    cout << "- Scale Levels: " << nLevels << endl;
-    cout << "- Scale Factor: " << fScaleFactor << endl;
-    cout << "- Initial Fast Threshold: " << fIniThFAST << endl;
-    cout << "- Minimum Fast Threshold: " << fMinThFAST << endl;
+   
 
     if(sensor==System::STEREO || sensor==System::RGBD)
     {
         mThDepth = mbf*(float)fSettings["ThDepth"]/fx;
-        cout << endl << "Depth Threshold (Close/Far Points): " << mThDepth << endl;
     }
 
     if(sensor==System::RGBD)
@@ -145,7 +187,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
         else
             mDepthMapFactor = 1.0f/mDepthMapFactor;
     }
-
+	PrintConfig();
 }
 
 void Tracking::SetLocalMapper(LocalMapping *pLocalMapper)
@@ -1587,6 +1629,10 @@ void Tracking::InformOnlyTracking(const bool &flag)
     mbOnlyTracking = flag;
 }
 
-
+cv::Mat Tracking::getPose(){
+	cv::Mat pose=cv::Mat::zeros(4,4, CV_32F);
+	mpMapDrawer->GetCurrentCameraMatrix(pose);
+	return(pose.clone());
+}
 
 } //namespace ORB_SLAM

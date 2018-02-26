@@ -113,7 +113,7 @@ public:
     void SaveTrajectoryKITTI(const string &filename);
 
     // TODO: Save/Load functions
-    // SaveMap(const string &filename);
+    bool SaveMap(const string &filename);
     // LoadMap(const string &filename);
 
     // Information from most recent processed frame
@@ -122,6 +122,12 @@ public:
     std::vector<MapPoint*> GetTrackedMapPoints();
     std::vector<cv::KeyPoint> GetTrackedKeyPointsUn();
 
+	//UPDATES FOR SLAMBENCH2 THESE WHERE PRIVATE
+	// It also decides when to insert a new keyframe, create some new MapPoints and
+    // performs relocalization if tracking fails.
+    Tracking* mpTracker;
+	FrameDrawer* mpFrameDrawer;
+    MapDrawer* mpMapDrawer;    
 private:
 
     // Input sensor
@@ -137,9 +143,7 @@ private:
     Map* mpMap;
 
     // Tracker. It receives a frame and computes the associated camera pose.
-    // It also decides when to insert a new keyframe, create some new MapPoints and
-    // performs relocalization if tracking fails.
-    Tracking* mpTracker;
+ 
 
     // Local Mapper. It manages the local map and performs local bundle adjustment.
     LocalMapping* mpLocalMapper;
@@ -151,8 +155,7 @@ private:
     // The viewer draws the map and the current camera pose. It uses Pangolin.
     Viewer* mpViewer;
 
-    FrameDrawer* mpFrameDrawer;
-    MapDrawer* mpMapDrawer;
+    
 
     // System threads: Local Mapping, Loop Closing, Viewer.
     // The Tracking thread "lives" in the main execution thread that creates the System object.
