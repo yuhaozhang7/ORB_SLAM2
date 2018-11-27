@@ -120,7 +120,7 @@ static const float default_depth_threshold=40;
 // PERSONALIZED DATATYPE FOR ORBSLAM PARAMETERS
 // ===========================================================
 
-template<> inline const std::string  TypedParameter<orbslam_input_mode>::getValue(const void * ptr) {
+template<> inline const std::string  TypedParameter<orbslam_input_mode>::getValue(const void * ptr) const {
 	switch (*((orbslam_input_mode*) ptr))  {
 	case orbslam_input_mode::mono : return "mono";
 	case orbslam_input_mode::stereo : return "stereo";
