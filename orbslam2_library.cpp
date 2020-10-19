@@ -120,7 +120,7 @@ static const float default_depth_threshold=40;
 // PERSONALIZED DATATYPE FOR ORBSLAM PARAMETERS
 // ===========================================================
 
-template<> inline const std::string  TypedParameter<orbslam_input_mode>::getValue(const void * ptr) const {
+template<> inline const std::string TypedParameter<orbslam_input_mode>::getValue(const void * ptr) const {
 	switch (*((orbslam_input_mode*) ptr))  {
 	case orbslam_input_mode::mono : return "mono";
 	case orbslam_input_mode::stereo : return "stereo";
@@ -137,13 +137,13 @@ template<> inline void  TypedParameter<orbslam_input_mode>::copyValue(orbslam_in
 template<> inline void  TypedParameter<orbslam_input_mode>::setValue(const char* optarg)  {
 
 	if (std::string(optarg) == "auto")
-	{*((orbslam_input_mode*)_ptr) = orbslam_input_mode::automatic;}
+	{*((orbslam_input_mode*)ptr_) = orbslam_input_mode::automatic;}
 	else if (std::string(optarg) == "mono")
-	{*((orbslam_input_mode*)_ptr) = orbslam_input_mode::mono;}
+	{*((orbslam_input_mode*)ptr_) = orbslam_input_mode::mono;}
 	else if (std::string(optarg) == "stereo")
-	{*((orbslam_input_mode*)_ptr) = orbslam_input_mode::stereo;}
+	{*((orbslam_input_mode*)ptr_) = orbslam_input_mode::stereo;}
 	else if (std::string(optarg) == "rgbd")
-	{*((orbslam_input_mode*)_ptr) = orbslam_input_mode::rgbd;}
+	{*((orbslam_input_mode*)ptr_) = orbslam_input_mode::rgbd;}
 	else
 	{throw std::logic_error("The argument you gave for ORBSLAM Mode is incorrect, only 'auto', 'mono', 'stereo' or 'rgbd' are valid.");}
 };
@@ -263,11 +263,11 @@ bool sb_init_slam_system(SLAMBenchLibraryHelper * slam_settings)  {
 
 		cv::Mat camera_distortion(5,1,CV_32F);
 		if (depth_sensor->DistortionType == slambench::io::CameraSensor::RadialTangential) {
-			camera_distortion.at<float>(0) =  depth_sensor->RadialTangentialDistortion[0];
-			camera_distortion.at<float>(1) =  depth_sensor->RadialTangentialDistortion[1];
-			camera_distortion.at<float>(2) =  depth_sensor->RadialTangentialDistortion[2];
-			camera_distortion.at<float>(3) =  depth_sensor->RadialTangentialDistortion[3];
-			camera_distortion.at<float>(4) =  depth_sensor->RadialTangentialDistortion[4];
+			camera_distortion.at<float>(0) =  depth_sensor->Distortion[0];
+			camera_distortion.at<float>(1) =  depth_sensor->Distortion[1];
+			camera_distortion.at<float>(2) =  depth_sensor->Distortion[2];
+			camera_distortion.at<float>(3) =  depth_sensor->Distortion[3];
+			camera_distortion.at<float>(4) =  depth_sensor->Distortion[4];
 		} else {
 			camera_distortion.at<float>(0) = 0.0;
 			camera_distortion.at<float>(1) = 0.0;
@@ -322,11 +322,11 @@ bool sb_init_slam_system(SLAMBenchLibraryHelper * slam_settings)  {
 			camera_parameters.at<float>(1,2) = ((slambench::io::CameraSensor*)rgb_sensor)->Intrinsics[3]*((slambench::io::CameraSensor*)rgb_sensor)->Height;
 
 			if (rgb_sensor->DistortionType == slambench::io::CameraSensor::RadialTangential) {
-				camera_distortion.at<float>(0) =  rgb_sensor->RadialTangentialDistortion[0];
-				camera_distortion.at<float>(1) =  rgb_sensor->RadialTangentialDistortion[1];
-				camera_distortion.at<float>(2) =  rgb_sensor->RadialTangentialDistortion[2];
-				camera_distortion.at<float>(3) =  rgb_sensor->RadialTangentialDistortion[3];
-				camera_distortion.at<float>(4) =  rgb_sensor->RadialTangentialDistortion[4];
+				camera_distortion.at<float>(0) =  rgb_sensor->Distortion[0];
+				camera_distortion.at<float>(1) =  rgb_sensor->Distortion[1];
+				camera_distortion.at<float>(2) =  rgb_sensor->Distortion[2];
+				camera_distortion.at<float>(3) =  rgb_sensor->Distortion[3];
+				camera_distortion.at<float>(4) =  rgb_sensor->Distortion[4];
 			} else {
 				camera_distortion.at<float>(0) = 0.0;
 				camera_distortion.at<float>(1) = 0.0;
@@ -347,11 +347,11 @@ bool sb_init_slam_system(SLAMBenchLibraryHelper * slam_settings)  {
 			camera_parameters.at<float>(1,2) = grey_sensor_one->Intrinsics[3]*grey_sensor_one->Height;
 
 			if (grey_sensor_one->DistortionType == slambench::io::CameraSensor::RadialTangential) {
-				camera_distortion.at<float>(0) =  grey_sensor_one->RadialTangentialDistortion[0];
-				camera_distortion.at<float>(1) =  grey_sensor_one->RadialTangentialDistortion[1];
-				camera_distortion.at<float>(2) =  grey_sensor_one->RadialTangentialDistortion[2];
-				camera_distortion.at<float>(3) =  grey_sensor_one->RadialTangentialDistortion[3];
-				camera_distortion.at<float>(4) =  grey_sensor_one->RadialTangentialDistortion[4];
+				camera_distortion.at<float>(0) =  grey_sensor_one->Distortion[0];
+				camera_distortion.at<float>(1) =  grey_sensor_one->Distortion[1];
+				camera_distortion.at<float>(2) =  grey_sensor_one->Distortion[2];
+				camera_distortion.at<float>(3) =  grey_sensor_one->Distortion[3];
+				camera_distortion.at<float>(4) =  grey_sensor_one->Distortion[4];
 			} else {
 				camera_distortion.at<float>(0) = 0.0;
 				camera_distortion.at<float>(1) = 0.0;
@@ -411,18 +411,18 @@ bool sb_init_slam_system(SLAMBenchLibraryHelper * slam_settings)  {
 
 
 		D_l = cv::Mat::zeros(1, 5,CV_64F);
-		D_l.at<double>(0,0) =  grey_sensor_one->RadialTangentialDistortion[0];
-		D_l.at<double>(0,1) =  grey_sensor_one->RadialTangentialDistortion[1];
-		D_l.at<double>(0,2) =  grey_sensor_one->RadialTangentialDistortion[2];
-		D_l.at<double>(0,3) =  grey_sensor_one->RadialTangentialDistortion[3];
-		D_l.at<double>(0,4) =  grey_sensor_one->RadialTangentialDistortion[4];
+		D_l.at<double>(0,0) =  grey_sensor_one->Distortion[0];
+		D_l.at<double>(0,1) =  grey_sensor_one->Distortion[1];
+		D_l.at<double>(0,2) =  grey_sensor_one->Distortion[2];
+		D_l.at<double>(0,3) =  grey_sensor_one->Distortion[3];
+		D_l.at<double>(0,4) =  grey_sensor_one->Distortion[4];
 
 		D_r = cv::Mat::zeros(1, 5,CV_64F);
-		D_r.at<double>(0,0) =  grey_sensor_two->RadialTangentialDistortion[0];
-		D_r.at<double>(0,1) =  grey_sensor_two->RadialTangentialDistortion[1];
-		D_r.at<double>(0,2) =  grey_sensor_two->RadialTangentialDistortion[2];
-		D_r.at<double>(0,3) =  grey_sensor_two->RadialTangentialDistortion[3];
-		D_r.at<double>(0,4) =  grey_sensor_two->RadialTangentialDistortion[4];
+		D_r.at<double>(0,0) =  grey_sensor_two->Distortion[0];
+		D_r.at<double>(0,1) =  grey_sensor_two->Distortion[1];
+		D_r.at<double>(0,2) =  grey_sensor_two->Distortion[2];
+		D_r.at<double>(0,3) =  grey_sensor_two->Distortion[3];
+		D_r.at<double>(0,4) =  grey_sensor_two->Distortion[4];
 
 
 
