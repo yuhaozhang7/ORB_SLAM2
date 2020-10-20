@@ -624,7 +624,8 @@ bool sb_process_once (SLAMBenchLibraryHelper * slam_settings)  {
 
 
 bool sb_clean_slam_system() {
-	SLAM->Shutdown();
+//	SLAM->Shutdown();
+        delete SLAM;
 	return true;
 }
 
