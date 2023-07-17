@@ -36,12 +36,10 @@ if(NOT OpenCV_FOUND)
    endif()
 endif()
 
-find_package(Eigen3 3.1.0 REQUIRED)
-find_package(Pangolin REQUIRED)
-
 include_directories(
 ${PROJECT_SOURCE_DIR}
 ${PROJECT_SOURCE_DIR}/include
+${TOON_INCLUDE_DIR}
 ${EIGEN3_INCLUDE_DIR}
 ${Pangolin_INCLUDE_DIRS}
 ${SLAMBENCH_INCLUDE_DIRS}
@@ -79,12 +77,8 @@ target_link_libraries(${PROJECT_NAME}-original
   )
 target_link_libraries(${PROJECT_NAME}
 ${OpenCV_LIBS}
-${EIGEN3_LIBS}
 ${Pangolin_LIBRARIES}
 DBoW2
 g2o
 )
 
-# Build examples
-
-generate_slam_library(${PROJECT_NAME}-original "")
