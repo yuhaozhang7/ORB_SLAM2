@@ -114,7 +114,7 @@ static const int default_camera_fps=40;
 static float depth_threshold;
 static const float default_depth_threshold=40;
 
-
+static uint* _ptr = nullptr;
 
 // ===========================================================
 // PERSONALIZED DATATYPE FOR ORBSLAM PARAMETERS
