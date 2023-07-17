@@ -82,3 +82,7 @@ DBoW2
 g2o
 )
 
+install(TARGETS ${PROJECT_NAME}  DESTINATION  lib/)
+install(TARGETS ${PROJECT_NAME}-original  DESTINATION  lib/)
+
+
