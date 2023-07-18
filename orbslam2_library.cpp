@@ -74,7 +74,7 @@ static slambench::outputs::Output *frame2_output;
 static slambench::TimeStamp last_frame_timestamp;
 
 static const std::string default_settings_file = "";
-static const std::string default_vocabulary_file = "./benchmarks/orbslam2/src/original/Vocabulary/ORBvoc.bin";
+static const std::string default_vocabulary_file = "/deps/orbslam2/Vocabulary/ORBvoc.bin";
 
 
 ORB_SLAM2::System* SLAM;
