@@ -85,4 +85,17 @@ g2o
 install(TARGETS ${PROJECT_NAME}  DESTINATION  lib/)
 install(TARGETS ${PROJECT_NAME}-original  DESTINATION  lib/)
 
+SET(SLAMBENCH_C_WRAPPER	-Wl,--whole-archive -L${WRAPPER_PATH} slambench-c-wrapper	-Wl,--no-whole-archive)
+SET(NULL_FILE_PATH	${WRAPPER_PATH}/null.cpp)
+
+function(generate_slam_library library_name )
+
+    add_library(${library_name}-library SHARED ${NULL_FILE_PATH})
+    target_link_libraries(${library_name}-library PRIVATE ${SLAMBENCH_C_WRAPPER} ${library_name})
+    SET_TARGET_PROPERTIES(${library_name}-library PROPERTIES LINK_FLAGS "${ARGN}")
+    install(TARGETS ${library_name}-library  DESTINATION  lib/)
+
+endfunction()
+
+generate_slam_library(${PROJECT_NAME}-original "")
 
